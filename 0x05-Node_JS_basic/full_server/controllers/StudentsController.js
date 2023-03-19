@@ -1,35 +1,41 @@
 const readDatabase = require('../utils');
 
-module.exports = class StudentsController {
-  static getAllStudents(request, response) {
-    readDatabase(process.argv[2])
-      .then((data) => {
-        let printData = 'This is the list of our students';
-        for (const field in data) {
-          if (Object.hasOwnProperty.call(data, field)) {
-            const element = data[field];
-            printData += `\nNumber of students in ${field}: ${element.number}. ${element.students}`;
-          }
-        }
-        response.send(printData);
-      })
-      .catch((err) => {
-        response.status(500).send(err.message);
-      });
+const arrToStr = (arr) => arr.reduce((a, b, i) => a + b + (i === arr.length - 1 ? '' : ', '), '');
+
+class StudentsController {
+  static async getAllStudents(request, response) {
+    try {
+      const { cs, swe } = await readDatabase(process.argv[2]);
+      let output = 'This is the list of our students\n';
+      output += `Number of students in CS: ${cs.length}. List: ${arrToStr(
+        cs,
+      )}\n`;
+      output += `Number of students in SWE: ${swe.length}. List: ${arrToStr(
+        swe,
+      )}\n`;
+      response.status(200).send(output);
+    } catch (err) {
+      console.log(err);
+      response.status(500).send('Cannot load the database');
+    }
   }
 
-  static getAllStudentsByMajor(request, response) {
-    if (!['SWE', 'CS'].includes(request.params.major)) {
+  static async getAllStudentsByMajor(request, response) {
+    const { major } = request.params;
+    if (major !== 'CS' && major !== 'SWE') {
       response.status(500).send('Major parameter must be CS or SWE');
+    } else {
+      try {
+        const { cs, swe } = await readDatabase(process.argv[2]);
+        response
+          .status(200)
+          .send(`List: ${arrToStr(major === 'CS' ? cs : swe)}`);
+      } catch (err) {
+        console.log(err);
+        response.status(500).send('Cannot load the database');
+      }
     }
-    readDatabase(process.argv[2])
-      .then((data) => {
-        const printData = data[request.params.major].students;
-        if (printData) response.send(printData);
-        response.status(500).send('Major parameter must be CS or SWE');
-      })
-      .catch((err) => {
-        response.status(500).send(err.message);
-      });
   }
-};
+}
+
+module.exports = StudentsController;
