@@ -1,5 +1,5 @@
 # 0x00. ES6 Basics
-***
+
 
     __Concepts__
     Software Linter
@@ -26,7 +26,5 @@
     Object creation and their properties in ES6
     Iterators and for-of loops
 
-**
-> _Jest, Babel & ESLint_ :+1:
->>  I love rust but still clictching with JS
->>> clone :my babe from ethiopia:
+
+
